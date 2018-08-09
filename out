@@ -26,6 +26,9 @@ fi
 
 #text=$(echo "$text" | envsubst)
 
+text="$(echo "${text}" | jq -c '.')"
+echo $text
+
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
 
