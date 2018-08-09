@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CURL_OPTION="-v"
+CURL_OPTION="-v -H 'Content-Type: application/json'"
 
 set -e
 exec 3>&1
