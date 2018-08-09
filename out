@@ -15,7 +15,8 @@ message_file=$(mktemp /tmp/resource-in.XXXXXX)
 
 cat > "${payload}" <&0
 
-echo "Using temporary directory ${payload}"
+echo "Using temporary file ${payload} for payload"
+echo "Using temporary file ${message_file} for message content"
 
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
 text=$(jq -r '(.params.text // null)' < $payload)
@@ -34,7 +35,7 @@ fi
 text="$(echo "${text}" | jq -c '.')"
 
 echo $text
-cat $text > $message_file
+echo $text > $message_file
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
