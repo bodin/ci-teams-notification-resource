@@ -24,7 +24,7 @@ if [[ "${text}" == "null" && -n $FILE_CONTENT ]]; then
   text=$FILE_CONTENT
 fi
 
-text=$(echo "$text" | envsubst)
+#text=$(echo "$text" | envsubst)
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
