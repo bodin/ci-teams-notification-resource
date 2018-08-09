@@ -11,6 +11,8 @@ exec 1>&2
 #set -x
 
 payload=$(mktemp /tmp/resource-in.XXXXXX)
+message_file=$(mktemp /tmp/resource-in.XXXXXX)
+
 cat > "${payload}" <&0
 
 echo "Using temporary directory ${payload}"
@@ -31,11 +33,14 @@ fi
 
 text="$(echo "${text}" | jq -c '.')"
 
+echo $text
+cat $text > $message_file
+
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
 
 url_path="$(echo ${webhook_url} | sed -e "s/https\{0,1\}:\/\/[^\/]*\(\/[^?&#]*\).*/\1/")"
-curl -v -H "Content-Type: application/json" --data-urlencode "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
+curl -v -H "Content-Type: application/json" -d "@${message_file}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
 
 timestamp=$(date +%s)
 metadata="$(cat <<EOF
