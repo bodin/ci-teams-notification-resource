@@ -19,7 +19,7 @@ text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
 text=$(jq -r '(.params.text // null)' < $payload)
 
 FILE_CONTENT=""
-[[ -n "${text_file}" && -f "${text_file}" ]]; then
+if [[ -n "${text_file}" && -f "${text_file}" ]]; then
   FILE_CONTENT="$(cat "${text_file}")"
 fi
 
