@@ -1,5 +1,6 @@
 # Concourse CI Teams Resource
 
+
 Sends messages to [Microsoft Teams](https://teams.microsoft.com) from
 within [Concourse CI](https://concourse.ci) pipelines.
 
@@ -111,4 +112,3 @@ example of an alert in a pull-request job
 * `color`: *Optional.* Sidebar color (doesn't appear to be implemented yet in the Teams UI)
 * `actionName`: *Optional.* Text on the button/link (shows up as a link though the Teams docs show a button)
 * `actionTarget`: *Optional.* URL to connect to the button/link
-
