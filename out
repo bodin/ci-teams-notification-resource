@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CURL_OPTION="-v -H 'Content-Type: application/json'"
+CURL_OPTION=""
 
 set -e
 
@@ -30,15 +30,12 @@ fi
 #text=$(echo "$text" | envsubst)
 
 text="$(echo "${text}" | jq -c '.')"
-echo $text_file
-echo $text
-echo $FILE_CONTENT
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
 
 url_path="$(echo ${webhook_url} | sed -e "s/https\{0,1\}:\/\/[^\/]*\(\/[^?&#]*\).*/\1/")"
-curl ${CURL_OPTION} --data-urlencode "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
+curl -v -H "Content-Type: application/json" --data-urlencode "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
 
 timestamp=$(date +%s)
 metadata="$(cat <<EOF
