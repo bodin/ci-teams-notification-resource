@@ -7,37 +7,30 @@ exec 3>&1
 exec 1>&2
 #set -x
 
-function evaluate {
-  __var=$1
-  # escape ( and ) from markdown
-  __var="${__var//\(/\\(}"
-  __var="${__var//\)/\\)}"
-  __var="${__var//\:/\\:}"
-  __var=`eval echo $__var`
-  echo $__var
-}
-
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "${payload}" <&0
+
+echo "Using temporary directory ${payload}"
 
 format="markdown"
 color="$(jq -r '.params.color // "00EA43"' < "${payload}")"
 
-actionName=$(evaluate "$(jq -r '.params.actionName // "Open Concourse"' < "${payload}")")
+text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
+text=$(jq -r '(.params.attachments // null)' < $payload)
 
-actionTarget=$(evaluate "$(jq -r '.params.actionTarget // "https://concourse.ci"' < "${payload}")")
+FILE_CONTENT=""
+[[ -n "${text_file}" && -f "${text_file}" ]] && FILE_CONTENT="$(cat "${text_file}")"
+if [[ "${text}" == "null" && -n $FILE_CONTENT ]]; then
+  text=$FILE_CONTENT
+fi
 
-title=$(evaluate "$(jq -r '.params.title // "Concourse CI"' < "${payload}")")
-
-text=$(evaluate "$(jq -r '.params.text // "NO MSG"' < "${payload}")")
-
-body="{\"TextFormat\": \"${format}\", \"text\": \"${text}\", \"title\": \"${title}\", \"potentialAction\": [{\"@context\": \"https://schema.org\", \"@type\": \"ViewAction\", \"name\": \"${actionName}\", \"target\": [\"${actionTarget}\"]}]}"
+text=$(echo "$text" | envsubst)
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
 
 url_path="$(echo ${webhook_url} | sed -e "s/https\{0,1\}:\/\/[^\/]*\(\/[^?&#]*\).*/\1/")"
-curl ${CURL_OPTION} -d "${body}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
+curl ${CURL_OPTION} -d "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
 
 timestamp=$(date +%s)
 metadata="$(cat <<EOF
@@ -52,4 +45,3 @@ EOF
 )"
 
 echo "$metadata"  >&3
-
