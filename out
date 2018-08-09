@@ -12,11 +12,8 @@ cat > "${payload}" <&0
 
 echo "Using temporary directory ${payload}"
 
-format="markdown"
-color="$(jq -r '.params.color // "00EA43"' < "${payload}")"
-
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
-text=$(jq -r '(.params.attachments // null)' < $payload)
+text=$(jq -r '(.params.text // null)' < $payload)
 
 FILE_CONTENT=""
 [[ -n "${text_file}" && -f "${text_file}" ]] && FILE_CONTENT="$(cat "${text_file}")"
@@ -27,13 +24,15 @@ fi
 #text=$(echo "$text" | envsubst)
 
 text="$(echo "${text}" | jq -c '.')"
+echo $text_file
 echo $text
+echo $FILE_CONTENT
 
 webhook_url="$(jq -r '.source.url' < "${payload}")"
 redacted_webhook_url=$(echo "${webhook_url}" | sed -e 's#/\([^/\.]\{2\}\)[^/.]\{5,\}\([^/.]\{2\}\)#/\1…\2#g' | jq -R .)
 
 url_path="$(echo ${webhook_url} | sed -e "s/https\{0,1\}:\/\/[^\/]*\(\/[^?&#]*\).*/\1/")"
-curl ${CURL_OPTION} -d "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
+curl ${CURL_OPTION} --data-urlencode "${text}" "${webhook_url}" 2>&1 | sed -e "s#${url_path}#***WEBHOOK URL REDACTED***#g"
 
 timestamp=$(date +%s)
 metadata="$(cat <<EOF
