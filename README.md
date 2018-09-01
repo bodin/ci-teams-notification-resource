@@ -1,4 +1,4 @@
-# Concourse CI Teams Resource
+# (Forked) Concourse CI Teams Resource
 
 Sends messages to [Microsoft Teams](https://teams.microsoft.com) from
 w ithin [Concourse CI](https://concourse.ci) pipelines.
