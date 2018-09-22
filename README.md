@@ -13,6 +13,7 @@ protocols.
 Resolves at runtime Concourse CI environment variables referenced in your Teams
 connector messages such as:
 
+
 ```
 $BUILD_ID
 $BUILD_NAME
